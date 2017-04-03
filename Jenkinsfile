@@ -86,12 +86,20 @@ stage('Deploy')
         ssh("${VIRTUALENV_DIR}/bin/gunicorn_stop", [NAME: APP_NAME])
 
         // STFP and extract zip file
-        ssh ("mv ${DEPLOY_DIR}/db.sqlite3 /tmp/db.sqlite3")
+        ssh ("""
+        if [ -f ${DEPLOY_DIR}/db.sqlite3 ];
+        then mv ${DEPLOY_DIR}/db.sqlite3 /tmp/db.sqlite3;
+        fi
+        """)
         ssh("rm -rf ${DEPLOY_DIR}/*")
         sftp_put("./${ZIP_FILE}", "/tmp/")
         ssh("tar -zxf /tmp/${ZIP_FILE} --directory ${DEPLOY_DIR}/")
         ssh("rm /tmp/${ZIP_FILE}")
-        ssh ("mv /tmp/db.sqlite3 ${DEPLOY_DIR}/db.sqlite3")
+        ssh ("""
+        if [ -f /tmp/db.sqlite3 ];
+        then mv /tmp/db.sqlite3 ${DEPLOY_DIR}/db.sqlite3;
+        fi
+        """)
         ssh("chown www-data: ${DEPLOY_DIR}")
 
         // Add helper script to set required env vars
