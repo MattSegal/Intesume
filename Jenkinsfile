@@ -2,11 +2,11 @@
 
 env.ENVIRONMENT_TYPE = 'PROD'
 env.TARGET_NODE_ADDRESS = '192.241.240.97'
-env.APP_NAME = 'links' // this is what happens when you don't template your salt files =/
+env.APP_NAME = 'intesume'
 env.SALT_NAME = 'intesume.localdomain'
 
 def WEBAPPS_DIR = '/var/webapps'
-def DEPLOY_DIR = "${WEBAPPS_DIR}/${APP_NAME}/app"
+def DEPLOY_DIR = "${WEBAPPS_DIR}/intesume/app"
 def VIRTUALENV_DIR = "${WEBAPPS_DIR}/${APP_NAME}"
 def ZIP_FILE = "${APP_NAME}.tar.gz"
 
