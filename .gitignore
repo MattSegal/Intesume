@@ -1,0 +1,19 @@
+# tells git what files to ignore
+*~
+*.swp
+*.pyc
+venv
+node_modules
+*.prod
+*.prod2
+Thumbs.db
+.cache/
+assets/*.js
+assets/*.css
+sql/
+*.sqlite3
+webpack-stats.json
+env/
+npm-debug.log.*
+.tmp/
+

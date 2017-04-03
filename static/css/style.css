@@ -1,0 +1,92 @@
+html, body {
+    padding: 0;
+    margin: 0;
+}
+
+h1  {
+    margin: 0;
+    font-family: 'Playball', 'cursive';
+    font-size: 100px;
+    font-weight: normal;
+    text-align: center;
+    color: rgb(255,206,0);
+}
+
+header {
+    background-color: rgb(155,129,186);
+    box-sizing: border-box;
+    padding: 3em 0;
+}
+
+h2 {
+    font-family: 'Playball', 'cursive';
+    font-weight: normal;
+    text-align: center;
+    color: rgb(255,206,0);
+    padding: 0.5em 0;
+    margin: 0;
+}
+
+h2.contact  {
+    font-size: 2.5em;
+    padding: 0 0 0.5em 0;
+}
+
+h3 {
+    font-family: 'Playball', 'cursive';
+    font-size: 1.5em;
+    font-weight: normal;
+    text-align: center;
+    padding-top: 1em;
+}
+
+}
+
+img {
+    width: 431;
+    height: 431
+}
+
+
+
+.grey-panel-wrapper {
+    color: #333;
+    background-color: rgb(238,238,240);
+}
+
+.purple-panel-wrapper {
+    background-color: rgb(155,129,186);
+    color: rgb(255,206,0);
+}
+
+.panel {
+    padding: 40px 0;
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.panel.hero {
+    display: flex;
+    max-width: 900px;
+}
+
+p {
+    font-family: 'Slabo 27px', serif;
+    font-size: 1.2em;
+    line-height: 1.4em;
+}
+
+li {
+    font-family: 'Slabo 27px', serif;
+    font-size: 1em;
+    line-height: 2em;
+}
+
+@media (max-width: 900px) {   
+    .panel {
+        padding: 40px 20px;
+    }
+    .hero {
+        flex-wrap: wrap;
+    }
+}

@@ -1,0 +1,34 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Intesume</title>
+    <link href="https://fonts.googleapis.com/css?family=Playball" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Slabo+27px" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="{% static "css/style.css" %}">
+
+</head>
+<body>
+    <header>
+        <h1>Intesume</h1>
+    </header>
+    {% for panel in panels %}
+    {% if panel.order == 1 %}
+    <div class="grey-panel-wrapper">
+        <div class="panel hero">
+            <img src="{% static "img/mascot.jpg" %}">
+            <div class="side-wrapper">
+                {{panel.html|safe}}
+            </div>  
+        </div>
+    </div>
+    {% else %}
+    <div class="{% cycle 'purple' 'grey' %}-panel-wrapper">
+        <div class="panel">
+            {{panel.html|safe}}
+        </div>
+    </div>
+    {% endif %}
+    {% endfor %}
+</body>
+</html>
