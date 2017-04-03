@@ -1,23 +1,11 @@
 #!/usr/bin/env groovy
 
-def jenkinsEnvVars = Jenkins.instance.getGlobalNodeProperties()[0].getEnvVars() 
+env.ENVIRONMENT_TYPE = 'PROD'
+env.TARGET_NODE_ADDRESS = '11.11.11.11'
+env.APP_NAME = 'intesume'
 
-env.ENVIRONMENT_TYPE = jenkinsEnvVars.ENVIRONMENT_TYPE ?: 'TEST' // TEST or PROD
-env.TARGET_NODE_ADDRESS = jenkinsEnvVars.TARGET_NODE_ADDRESS ?: '45.55.161.12'
-env.APP_NAME = 'links'
 
-def unwanted_files = [
-    'Jenkinsfile',
-    'package.json',
-    'README.md',
-    'webpack.config.js',
-]
-
-def unwanted_folders = [
-    'assets-src',
-]
-
-def WEBAPPS_DIR = '/var/webapps'
+def WEBAPPS_DIR = '/var/www'
 def DEPLOY_DIR = "${WEBAPPS_DIR}/${APP_NAME}/app"
 def VIRTUALENV_DIR = "${WEBAPPS_DIR}/${APP_NAME}"
 def ZIP_FILE = "${APP_NAME}.tar.gz"
@@ -63,67 +51,12 @@ stage 'Checkout'
 echo '===== Git Checkout ====='
 checkout([
     $class: 'GitSCM', 
-    branches: [[name: '*/dev']], 
+    branches: [[name: '*/master']], 
     doGenerateSubmoduleConfigurations: false, 
     extensions: [], 
     submoduleCfg: [], 
-    userRemoteConfigs: [[url: 'https://github.com/MattSegal/Link-Sharing-Site.git']]
+    userRemoteConfigs: [[url: 'https://github.com/MattSegal/Intesume.git']]
 ])
-
-
-stage('Build')
-{
-    echo '===== Building ====='
-
-    // Get cached node_modules
-    sh ("""
-    if [ -d /var/build/node_modules ]
-    then 
-        cp -r /var/build/node_modules ./node_modules
-        npm rebuild node-sass
-    else 
-        mkdir -p /var/build/node_modules
-    fi
-    """)
-    sh 'npm install'
-
-    // Build javascript 
-    sh "export ENVIRONMENT_TYPE='${ENVIRONMENT_TYPE}';webpack --config ./webpack.config.js"
-
-    // Fix webpack-stats.json
-    def process_webpack_stats = """
-    |import json
-    |file_path = \"./webpack-stats.json\"
-    |with open(file_path,\"r\") as f:
-    |    stats = json.load(f)
-    |
-    |if stats[\"status\"] != \"done\":
-    |    raise Exception(stats)
-    |
-    |for idx in range(len(stats[\"chunks\"][\"main\"])):
-    |    file_name = stats[\"chunks\"][\"main\"][idx][\"path\"].split(\"/\")[-1]
-    |    stats[\"chunks\"][\"main\"][idx][\"path\"] = \"${DEPLOY_DIR}/assets/\" + file_name
-    |
-    |with open(file_path,\"w\") as f:
-    |    json.dump(stats,f)
-    """.stripMargin()
-    sh "echo '${process_webpack_stats}' | python"
-
-    // Cache node_modules
-    sh 'rm -rf /var/build/node_modules'
-    sh 'mv ./node_modules /var/build/node_modules'
-
-    // Delete stuff we don't want/need
-    for (folder in unwanted_folders)
-    {
-        sh "rm -rf ./${folder}"
-    }
-
-    for (file in unwanted_files)
-    {
-        sh "rm ./${file}"
-    }
-} // stage
 
 stage('Deploy')
 {
@@ -153,10 +86,12 @@ stage('Deploy')
         ssh("${VIRTUALENV_DIR}/bin/gunicorn_stop", [NAME: APP_NAME])
 
         // STFP and extract zip file
+        ssh ("mv ${DEPLOY_DIR}/db.sqlite3 /tmp/db.sqlite3")
         ssh("rm -rf ${DEPLOY_DIR}/*")
         sftp_put("./${ZIP_FILE}", "/tmp/")
         ssh("tar -zxf /tmp/${ZIP_FILE} --directory ${DEPLOY_DIR}/")
         ssh("rm /tmp/${ZIP_FILE}")
+        ssh ("mv /tmp/db.sqlite3 ${DEPLOY_DIR}/db.sqlite3")
         ssh("chown www-data: ${DEPLOY_DIR}")
 
         // Add helper script to set required env vars
@@ -171,35 +106,6 @@ stage('Deploy')
         |
         |chmod +x ${VIRTUALENV_DIR}/bin/set_env_vars
         """.stripMargin())
-
-        // Update data from prod
-        if (env.ENVIRONMENT_TYPE == 'TEST')
-        {
-           ssh("""
-            source ${VIRTUALENV_DIR}/bin/activate
-            source ${VIRTUALENV_DIR}/bin/set_env_vars
-            python ${VIRTUALENV_DIR}/app/manage.py shell -c \"from api.factories import build;build()\"
-            """)
-        }
-
-        // Create local database backups
-        // restore with
-        // > echo "DROP SCHEMA public CASCADE;CREATE SCHEMA public;" | sudo -u postgres -i psql $APP_NAME
-        // > cat $BACKUP.gz | gunzip | sudo -u postgres -i psql $APP_NAME
-
-        def backup_dir = "/var/backups/${APP_NAME}"
-        def backup_file = "postgres_${BUILD_ID}.gz"
-        def backup_path = "${backup_dir}/${backup_file}"
-        ssh("""
-        mkdir -p ${backup_dir}
-        sudo -u postgres -i pg_dump ${APP_NAME} | gzip > ${backup_path}
-        """)
-
-        sftp_get(backup_path,backup_file)
-        sh("""
-        mkdir -p ${backup_dir}
-        mv ${backup_file} ${backup_path}
-        """)
         
         // Start gunicorn + Django
         ssh("${VIRTUALENV_DIR}/bin/gunicorn_start deploy", [

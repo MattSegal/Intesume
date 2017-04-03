@@ -21,11 +21,12 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = '(^buvq)-)@_oqo+aiwwy*2xsl2_dsmnh50uh@f+vk*4hukjcfn'
+IS_PROD = os.environ.get('DEPLOY_STATUS') == 'PROD'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = not IS_PROD
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS').split(',')
 
 
 # Application definition
@@ -122,3 +123,6 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static")
 ]
+
+if IS_PROD:
+    STATIC_ROOT = os.environ.get('DJANGO_STATIC_ROOT')
