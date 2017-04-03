@@ -40,14 +40,27 @@ h3 {
     padding-top: 1em;
 }
 
-}
-
 img {
-    width: 431;
-    height: 431
+    width: 100%;
 }
 
+img::before {
+    display: block;
+    content: "";
+    width: 100%;
+}
 
+img > .img-wrapper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+  }
+
+.img-wrapper {
+    width: 100%;
+}
 
 .grey-panel-wrapper {
     color: #333;
