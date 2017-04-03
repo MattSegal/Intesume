@@ -71,7 +71,7 @@ stage('Deploy')
     sh 'mkdir -p /srv'
     clone_or_pull('/srv/salt', 'https://github.com/MattSegal/WebserverSalt.git')
 
-    echo 'Testing SaltStack connections'
+    echo "Testing SaltStack connections for ${SALT_NAME}"
     sh "sudo salt '${SALT_NAME}' test.ping"
 
     echo 'Applying latest SaltStack config'
