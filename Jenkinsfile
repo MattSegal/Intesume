@@ -66,17 +66,6 @@ stage('Deploy')
     sh "if [ -f ${ZIP_FILE} ];then rm ${ZIP_FILE};fi"
     sh "tar -zcf ${ZIP_FILE} ./*"
 
-    // Apply configuration with SaltStack
-    echo 'Pulling latest SaltStack config'
-    sh 'mkdir -p /srv'
-    clone_or_pull('/srv/salt', 'https://github.com/MattSegal/WebserverSalt.git')
-
-    echo "Testing SaltStack connections for ${SALT_NAME}"
-    sh "sudo salt '${SALT_NAME}' test.ping"
-
-    echo 'Applying latest SaltStack config'
-    sh "sudo salt '${SALT_NAME}' state.highstate  -l debug"
-
     sshagent(['jenkins']) 
     {
         // Print box name as debug step
