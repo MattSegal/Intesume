@@ -2,8 +2,8 @@
 
 env.ENVIRONMENT_TYPE = 'PROD'
 env.TARGET_NODE_ADDRESS = '192.241.240.97'
+env.DOMAIN_NAME = 'intesume.com'
 env.APP_NAME = 'intesume'
-env.SALT_NAME = 'intesume.localdomain'
 
 def WEBAPPS_DIR = '/var/webapps'
 def DEPLOY_DIR = "${WEBAPPS_DIR}/intesume/app"
@@ -106,7 +106,7 @@ stage('Deploy')
         
         // Start gunicorn + Django
         ssh("${VIRTUALENV_DIR}/bin/gunicorn_start deploy", [
-            ALLOWED_HOSTS: TARGET_NODE_ADDRESS,
+            ALLOWED_HOSTS: "${TARGET_NODE_ADDRESS},${DOMAIN_NAME},www.${DOMAIN_NAME}",
             APP_NAME: APP_NAME,
             DJANGODIR: DEPLOY_DIR,
             LOGFILE: "${VIRTUALENV_DIR}/gunicorn.log",
